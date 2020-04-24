@@ -1,0 +1,396 @@
+@{;
+    ViewBag.Title = "列表页面";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<link href="~/Content/layer2/mobile/need/layer.css" rel="stylesheet" />
+<script src="~/Content/layer2/layer.js" type="text/javascript"></script>
+<script>
+    ;
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //分配状态
+        $("#AssignMark").ComboBox({
+            description: "==请选择==",
+        });
+        //意向客户
+        $("#IntentionMark").ComboBox({
+            description: "==请选择==",
+        });
+        //售出状态
+        $("#SellMark").ComboBox({
+            description: "==请选择==",
+        });
+        //销售人员
+        $("#TraceUserId").ComboBoxTree({
+            url: "../../BaseManage/User/GetTreeJson",
+            description: "==请选择==",
+            height: "360px",
+            width: "280px",
+            allowSearch: true
+        });
+        //resize重设布局;
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 136.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        var queryJson = {};
+        queryJson.DeleteMark = 0;
+        $gridTable.jqGrid({
+            autowidth: true,
+            height: $(window).height() - 136.5,
+            url: "../../CustomerManage/ZZT_PDDCustomer/GetPageListJson",
+            postData: { queryJson: JSON.stringify(queryJson) },
+            datatype: "json",
+            colModel: [
+                { label: '主键', name: 'Id', index: 'Id', width: 100, align: 'left', sortable: true, hidden: true },
+                { label: '客户编号', name: 'CustNo', index: 'CustNo', width: 120, align: 'left', sortable: true },
+                //{ label: '订单编号', name: 'OrderNo', index: 'OrderNo', width: 180, align: 'left', sortable: true },
+                { label: '购买商品', name: 'GoodsName', index: 'GoodsName', width: 250, align: 'left', sortable: true },
+                { label: '省', name: 'Province', index: 'Province', width: 80, align: 'center', sortable: true },
+                { label: '市', name: 'City', index: 'City', width: 80, align: 'center', sortable: true },
+                { label: '手机号', name: 'Mobile', index: 'Mobile', width: 130, align: 'left', sortable: true, 
+                    formatter: function (cellvalue) {
+                        return cellvalue.replace(/^(.{3})(.{4})(.*)$/, '$1****$3');
+                    }
+                },
+                { label: '订单时间', name: 'OrderTime', index: 'OrderTime', width: 140, align: 'left', sortable: true },
+                {
+                    label: "分配", name: "AssignMark", index: "AssignMark", width: 50, align: "center", sortable: false,
+                    formatter: function (cellvalue) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                { label: '分配人', name: 'TraceUserName', index: 'TraceUserName', width: 100, align: 'center', sortable: true },
+                { label: '回电时间', name: 'CallOutTime', index: 'CallOutTime', width: 140, align: 'left', sortable: true },
+                { label: '姓名', name: 'FullName', index: 'FullName', width: 100, align: 'center', sortable: true },
+                {
+                    label: '性别', name: 'Gender', index: 'Gender', width: 45, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == 1) {
+                            return "男";
+                        }
+                        else if (cellvalue == 1) {
+                            return "女";
+                        }
+                        else {
+                            return "";
+                        }
+                    }
+                },
+                { label: '年龄', name: 'Age', index: 'Age', width: 50, align: 'center', sortable: true },
+                { label: '语气', name: 'Tone', index: 'Tone', width: 80, align: 'left', sortable: true },
+                {
+                    label: "服用", name: "OrallyMark", index: "OrallyMark", width: 50, align: "center", sortable: false,
+                    formatter: function (cellvalue) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                {
+                    label: '客户级别', name: 'CustLevelId', index: 'CustLevelId', width: 80, align: 'center', sortable: true,
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (!!top.clientdataItem["Client_Level"][cellvalue]) {
+                            return top.clientdataItem["Client_Level"][cellvalue];
+                        }
+                        else {
+                            return "";
+                        }
+                    }
+                },
+                {
+                    label: "意向", name: "IntentionMark", index: "IntentionMark", width: 50, align: "center", sortable: false,
+                    formatter: function (cellvalue) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                {
+                    label: "售出", name: "SellMark", index: "SellMark", width: 50, align: "center", sortable: false,
+                    formatter: function (cellvalue) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                { label: '备注', name: 'Description', index: 'Description', width: 100, align: 'left', sortable: true },
+                { label: '最后操作时间', name: 'ModifyDate', index: 'ModifyDate', width: 140, align: 'left', sortable: true },
+                { label: '操作用户', name: 'ModifyUserName', index: 'ModifyUserName', width: 100, align: 'left', sortable: true },
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'ModifyDate',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            multiselect: true,
+            onSelectRow: function () {
+                selectedRowIndex = $('#' + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $('#' + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+
+        //点击时间范围（今天、近7天、近一个月、近三个月）
+        $("#time_horizon a.btn-default").click(function () {
+            $("#time_horizon a.btn-default").removeClass("active");
+            $(this).addClass("active");
+            switch ($(this).attr('data-value')) {
+                case "1"://今天
+                    $("#StartTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                case "2"://近7天
+                    $("#StartTime").val("@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                case "3"://近一个月
+                    $("#StartTime").val("@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                case "4"://近三个月
+                    $("#StartTime").val("@DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                default:
+                    break;
+            }
+            $("#SelectedStartTime").html($("#StartTime").val());
+            $("#SelectedEndTime").html($("#EndTime").val());
+            $('#btn_Search').trigger("click");
+        });
+        //查询点击事件
+        $("#btn_Search").click(function () {
+            if (!$(".ui-filter-text").next('.ui-filter-list').is(":hidden")) {
+                $(".ui-filter-text").trigger("click");
+            }
+            $("#SelectedStartTime").html($("#StartTime").val());
+            $("#SelectedEndTime").html($("#EndTime").val());
+            var queryJson = $("#filter-form").GetWebControls();
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+                page: 1
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //分配
+    function btn_Assign() {
+        var keyValues = $('#gridTable').jqGridRowValue('Id');
+        if (!!keyValues) {
+            dialogOpen({
+                id: "OptionTraceUser",
+                title: '选择跟进人',
+                url: '/CustomerManage/ZZT_400Customer/OptionTraceUser',
+                width: "800px",
+                height: "600px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick(function (data) {
+                        if (!!data.UserId) {
+                            $.SaveForm({
+                                url: "../../CustomerManage/ZZT_PDDCustomer/SaveAssign?keyValues=" + keyValues + "&TraceUserId=" + data.UserId + "&TraceUserName=" + data.FullName,
+                                loading: "正在保存数据...",
+                                success: function () {
+                                    $.currentIframe().$("#gridTable").trigger("reloadGrid");
+                                }
+                            })
+                        } else {
+                            top.dialogTop('选择失败', 'error');
+                        }
+                    });
+                },
+                btn: ['确认选中', '关闭']
+            });
+        }
+
+    }
+
+    //放入公海
+    function btn_throw() {
+        var keyValues = $('#gridTable').jqGridRowValue('Id');
+        if (keyValues) {
+            $.ConfirmAjax({
+                msg: "注：您确定要放入到公海吗？",
+                url: '../../CustomerManage/ZZT_PDDCustomer/SaveThrow',
+                param: { keyValues: keyValues },
+                success: function (data) {
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择要放入公海的拼多多客户！', 0);
+        }
+    }
+    //详细
+    function btn_detail() {
+        var keyValue = $("#gridTable").jqGridRowValue("Id");
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "Detail",
+                title: '客户信息',
+                url: '/CustomerManage/ZZT_PDDCustomer/ZZT_PDDCustomerForm?keyValue=' + keyValue,
+                width: '750px',
+                height: '650px',
+                btn: null
+            });
+        }
+    }
+
+    //跟进时间轴
+    function btn_chancetrail() {
+        var keyValue = $("#gridTable").jqGridRowValue('Id');
+        var fullName = $("#gridTable").jqGridRowValue('FullName');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: 'ChanceTrailIndex',
+                title: fullName + ' - 跟进时间轴',
+                url: '/CustomerManage/TrailRecord/Index?objectId=' + keyValue + '&objectSort=5',
+                width: '750px',
+                height: '550px',
+                btn: null
+            });
+        } else {
+            dialogMsg('请选择一个客户！', 0);
+        }
+    }
+</script>
+<div class="titlePanel">
+    <div class="title-search">
+        <table>
+            <tr>
+                <td>查询条件</td>
+                <td style="padding-left: 10px;">
+                    <div class="ui-filter" style="width: 200px;">
+                        <div class="ui-filter-text">
+                            <strong id="SelectedStartTime">@DateTime.Now.ToString("yyyy-MM-dd")</strong> 至 <strong id="SelectedEndTime">@DateTime.Now.ToString("yyyy-MM-dd")</strong>
+                        </div>
+                        <div class="ui-filter-list" style="width: 350px;">
+                            <table class="form" id="filter-form">
+                                <tr>
+                                    <th class="formTitle">订单日期：</th>
+                                    <td class="formValue">
+                                        <div style="float: left; width: 45%;">
+                                            <input id="StartTime" readonly type="text" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})">
+                                        </div>
+                                        <div style="float: left; width: 10%; text-align: center;">至</div>
+                                        <div style="float: left; width: 45%;">
+                                            <input id="EndTime" readonly type="text" class="form-control input-wdatepicker" onfocus="WdatePicker()">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">手机号：</td>
+                                    <td class="formValue">
+                                        <input id="Mobile" type="text" class="form-control">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">姓名：</td>
+                                    <td class="formValue">
+                                        <input id="FullName" type="text" class="form-control">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">客户编号：</td>
+                                    <td class="formValue">
+                                        <input id="CustNo" type="text" class="form-control">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">跟进人员：</td>
+                                    <td class="formValue">
+                                        <div id="TraceUserId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">分配状态：</td>
+                                    <td class="formValue">
+                                        <div id="AssignMark" type="select" class="ui-select">
+                                            <ul>
+                                                <li data-value="">==请选择==</li>
+                                                <li data-value="1">已分配</li>
+                                                <li data-value="0">未分配</li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">意向客户：</td>
+                                    <td class="formValue">
+                                        <div id="IntentionMark" type="select" class="ui-select">
+                                            <ul>
+                                                <li data-value="">==请选择==</li>
+                                                <li data-value="1">是</li>
+                                                <li data-value="0">否</li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">售出状态：</td>
+                                    <td class="formValue">
+                                        <div id="SellMark" type="select" class="ui-select">
+                                            <ul>
+                                                <li data-value="">==请选择==</li>
+                                                <li data-value="1">已售</li>
+                                                <li data-value="0">未售</li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div class="ui-filter-list-bottom">
+                                <a id="btn_Reset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>
+                                <a id="btn_Search" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding-left: 10px;">
+                    <div id="time_horizon" class="btn-group">
+                        <a class="btn btn-default" data-value="1">今天</a>
+                        <a class="btn btn-default" data-value="2">近7天</a>
+                        <a class="btn btn-default" data-value="3">近1个月</a>
+                        <a class="btn btn-default" data-value="4">近3个月</a>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toolbar">
+        <div class="toolbar">
+            <div class="btn-group">
+            </div>
+            <div class="btn-group">
+                <a id="lr-replace" class="btn btn-default" onclick="reload()"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+                <a id="lr-Assign" class="btn btn-default" onclick="btn_Assign()"><i class="fa fa-toggle-on"></i>&nbsp;分配</a>
+                <a id="lr-throw" class="btn btn-default" onclick="btn_throw()"><i class="fa fa-recycle"></i>&nbsp;放入公海</a>
+                <a id="lr-detail" class="btn btn-default" onclick="btn_detail()"><i class="fa fa-list-alt"></i>&nbsp;详细</a>
+            </div>
+            <div class="btn-group">
+                <a id="lr-chancetrail" class="btn btn-default" onclick="btn_chancetrail()"><i class="fa fa-clock-o"></i>&nbsp;跟进时间轴</a>
+            </div>
+        </div>
+    </div>
+    <script>$('.toolbar').authorizeButton()</script>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+    <div id="gridPager"></div>
+</div>

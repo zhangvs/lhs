@@ -1,0 +1,175 @@
+@{;
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initControl();
+    });
+    //初始化控件
+    function initControl() {
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../CustomerManage/ZZT_PDDLog/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                }
+            })
+        }
+    }
+    //保存表单;
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        $.SaveForm({
+            url: "../../CustomerManage/ZZT_PDDLog/SaveForm?keyValue=" + keyValue,
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <td class="formTitle">客户编号</td>
+            <td class="formValue">
+                <input id="CustNo" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">包裹号</td>
+            <td class="formValue">
+                <input id="ParcelNo" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">订单号</td>
+            <td class="formValue">
+                <input id="OrderNo" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">购买人昵称</td>
+            <td class="formValue">
+                <input id="NickName" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">收件人姓名</td>
+            <td class="formValue">
+                <input id="FullName" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">手机</td>
+            <td class="formValue">
+                <input id="Mobile" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">电话</td>
+            <td class="formValue">
+                <input id="Telphone" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">省</td>
+            <td class="formValue">
+                <input id="Province" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">市</td>
+            <td class="formValue">
+                <input id="City" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">区</td>
+            <td class="formValue">
+                <input id="County" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">地址</td>
+            <td class="formValue" colspan='3'>
+                <input id="Address" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">邮编</td>
+            <td class="formValue">
+                <input id="ZipCode" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">快递公司</td>
+            <td class="formValue">
+                <input id="Express" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">快递单号</td>
+            <td class="formValue">
+                <input id="ExpressNo" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">重量(克)</td>
+            <td class="formValue">
+                <input id="Weight" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">运费</td>
+            <td class="formValue">
+                <input id="Freight" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">商品信息</td>
+            <td class="formValue">
+                <input id="GoodsName" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">下单时间</td>
+            <td class="formValue">
+                <input id="OrderTime" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">付款时间</td>
+            <td class="formValue">
+                <input id="PayTime" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">发货时间</td>
+            <td class="formValue">
+                <input id="DeliveryTime" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">打印时间</td>
+            <td class="formValue">
+                <input id="PrintingTime" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">买家留言</td>
+            <td class="formValue">
+                <input id="BuyerMessage" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">卖家备注</td>
+            <td class="formValue">
+                <input id="SellerMessage" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">我打备注</td>
+            <td class="formValue">
+                <input id="MakeNote" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">合并订单</td>
+            <td class="formValue">
+                <input id="MergeOrder" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">备注</td>
+            <td class="formValue" colspan='3'>
+                <input id="Description" type="text" class="form-control"  />
+            </td>
+        </tr>
+       
+    </table>
+</div>

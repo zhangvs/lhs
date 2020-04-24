@@ -1,0 +1,217 @@
+﻿@{
+    ViewBag.Title = "订单详细";
+    Layout = "~/Views/Shared/_OrderForm.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        InitialPage();
+        GetOrderEntryGrid();
+        InitControl();
+    });
+    //初始化页面
+    function InitialPage() {
+        $(".bills").height($(window).height() - 88);
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $(".bills").height($(window).height() - 88);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //初始化控件
+    function InitControl() {
+        //客户名称
+        $("#SupplierId").ComboBox({
+            url: "../../BaseManage/Supplier_Info/GetListJson",
+            id: "ID",
+            text: "FullName",
+            description: "==请选择==",
+            height: "360px",
+            width: "280px",
+            allowSearch: true
+        });
+
+        //付款方式
+        $("#PaymentMode").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "Client_PaymentMode" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px"
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../CustomerManage/Buys_Order/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    //主表
+                    var order = data.order;
+                    $("#form1").SetWebControls(order);
+                    //明细
+                    var childEntity = data.childEntity;
+                    $("#gridTable").find('[role=row]').each(function (i) {
+                        var row = childEntity[i - 1];
+                        if (row != undefined) {
+                            $(this).find('td[aria-describedby="gridTable_OrderEntryId"]').html(row.OrderEntryId);
+                            $(this).find('td[aria-describedby="gridTable_ProductName"]').html(row.ProductName);
+                            $(this).find('td[aria-describedby="gridTable_ProductCode"]').html(row.ProductCode);
+                            $(this).find('td[aria-describedby="gridTable_UnitId"]').html(row.UnitId);
+                            $(this).find('td[aria-describedby="gridTable_Qty"]').html(toDecimal(row.Qty));
+                            $(this).find('td[aria-describedby="gridTable_Description"]').html(row.Description);
+
+                        }
+                    });
+                    //合计
+                    var TotalQty = 0.00;
+                    $("#gridTable").find('[role=row]').each(function (i) {
+                        var Qty = $(this).find('td:eq(5)').html();
+                        if (Qty != "" && Qty != undefined && Qty != '&nbsp;') {
+                            TotalQty += Number(Qty);
+                        }
+                    });
+                    $("#TotalQty").text(toDecimal(TotalQty));
+                }
+            });
+        }
+    }
+    //加载明细
+    function GetOrderEntryGrid() {
+        var $grid = $("#gridTable");
+        $grid.jqGrid({
+            unwritten: false,
+            datatype: "local",
+            height: '100%',
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'OrderEntryId', hidden: true },
+                { label: '商品名称', name: "ProductName", width: 260, align: 'left', sortable: false, resizable: false },
+                { label: '商品编号', name: "ProductCode", width: 100, align: 'center', sortable: false, resizable: false },
+                { label: '单位', name: "UnitId", width: 100, align: 'center', sortable: false, resizable: false },
+                { label: '数量', name: 'Qty', width: 80, align: 'center', sortable: false, resizable: false },
+                { label: '说明信息', name: 'Description', width: 200, align: 'left', sortable: false, resizable: false }
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计
+                $(this).footerData("set", {
+                    "UnitId": "合计：",
+                    "Qty": "<span id='TotalQty'>0.00</span>",
+                });
+                $('table.ui-jqgrid-ftable td[aria-describedby="gridTable_UnitId"]').prevUntil().css("border-right-color", "#fff");
+            }
+        });
+        //表头合并
+        $grid.jqGrid('setGroupHeaders', {
+            useColSpanStyle: true,
+            groupHeaders: [
+              { startColumnName: 'ProductName', numberOfColumns: 3, titleText: '商品信息' },
+              { startColumnName: 'Qty', numberOfColumns: 7, titleText: '价格信息' }
+            ]
+        });
+        //默认添加13行 空行
+        for (var i = 1; i < 11; i++) {
+            var rowdata = {
+                OrderEntryId: '',
+                ProductName: '',
+                ProductCode: '',
+                UnitId: '',
+                Qty: '',
+                Description: '',
+            }
+            $grid.jqGrid('addRowData', i, rowdata);
+        };
+    }
+    //打印
+    function btn_print() {
+        $(".bills").printTable();
+    }
+    //导出
+    function btn_export() {
+        location.href = "/CustomerManage/Buys_Order/ExportOrderEntry?orderId=" + keyValue;
+    }
+    //前单
+    function btn_prev() {
+        $.ajax({
+            url: "../../CustomerManage/Buys_Order/GetPrevJson?keyValue=" + keyValue,
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                if (data != null) {
+                    var src = top.contentPath + "/CustomerManage/Buys_Order/Detail?keyValue=" + data.OrderId;
+                    window.location = src;
+                    $.currentIframe().att('src', 'src');
+                }
+            }
+        });
+    }
+    //后单
+    function btn_next() {
+        $.ajax({
+            url: "../../CustomerManage/Buys_Order/GetNextJson?keyValue=" + keyValue,
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                if (data != null) {
+                    var src = top.contentPath + "/CustomerManage/Buys_Order/Detail?keyValue=" + data.OrderId;
+                    window.location = src;
+                    $.currentIframe().att('src', 'src');
+                }
+            }
+        });
+    }
+</script>
+<div class="bills">
+    <div class="printArea">
+        <table class="form" style="width: 100%; margin-bottom: 10px;">
+            <tr>
+                <th class="formTitle" style="width: 60px;">供应商<font face="宋体">*</font></th>
+                <td class="formValue">
+                    <div id="SupplierId" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                </td>
+                <th class="formTitle">单据日期<font face="宋体">*</font></th>
+                <td class="formValue">
+                    <input id="OrderDate" type="text" value="@HZSoft.Util.Time.GetToday()" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})" isvalid="yes" checkexpession="NotNull" />
+                </td>
+                <th class="formTitle">单据编号<font face="宋体">*</font></th>
+                <td class="formValue">
+                    <input id="OrderCode" type="text" readonly value="@ViewBag.OrderCode" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="gridPanel printArea">
+        <table id="gridTable"></table>
+    </div>
+    <div class="printArea">
+        <textarea id="Description" placeholder="暂无备注信息" class="form-control" style="width: 100%; height: 50px; margin-top: 10px;"></textarea>
+        <table class="form" style="width: 100%; margin-top: 5px;">
+            <tr>
+                <th class="formTitle"></th>
+                <td class="formValue"></td>
+                <th class="formTitle"></th>
+                <td class="formValue"></td>
+                <th class="formTitle">制单人员<font face="宋体">*</font></th>
+                <td class="formValue">
+                    <input id="CreateUserName" type="text" class="form-control" readonly value="@HZSoft.Application.Code.OperatorProvider.Provider.Current().UserName" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div id="bottomField">
+    <div class="btn-group">
+        <a id="lr-print" class="btn btn-default" onclick="btn_print()"><i class="fa fa-print"></i>&nbsp;打印</a>
+        <a id="lr-export" class="btn btn-default" onclick="btn_export()"><i class="fa fa-sign-out"></i>&nbsp;导出</a>
+    </div>
+</div>
